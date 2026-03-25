@@ -3,8 +3,13 @@ import json
 from typing import Any
 
 
-RAW_BASE = Path("./data/rawdata")
-OUT_BASE = Path("./data/normalized")
+FE_RAW_DIR = Path("./data/FE/rawdata")
+BE_EVENT_RAW_DIR = Path("./data/BE/BE_domain_event_log/rawdata")
+BE_REQUEST_RAW_DIR = Path("./data/BE/BE_server_request_log/rawdata")
+
+FE_NORM_DIR = Path("./data/FE/normalized")
+BE_EVENT_NORM_DIR = Path("./data/BE/BE_domain_event_log/normalized")
+BE_REQUEST_NORM_DIR = Path("./data/BE/BE_server_request_log/normalized")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -82,33 +87,34 @@ def normalize_be_event(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
-    fe_in = RAW_BASE / "client_telemetry_log_FE"
-    be_req_in = RAW_BASE / "server_request_log_BE"
-    be_evt_in = RAW_BASE / "domain_event_log_BE"
+    if not FE_RAW_DIR.exists():
+        raise FileNotFoundError(f"[ERROR] FE raw directory not found: {FE_RAW_DIR}")
 
-    fe_out = OUT_BASE / "client_telemetry_log_FE"
-    be_req_out = OUT_BASE / "server_request_log_BE"
-    be_evt_out = OUT_BASE / "domain_event_log_BE"
+    if not BE_EVENT_RAW_DIR.exists():
+        raise FileNotFoundError(f"[ERROR] BE event raw directory not found: {BE_EVENT_RAW_DIR}")
 
-    for path in sorted(fe_in.glob("*.json")):
+    if not BE_REQUEST_RAW_DIR.exists():
+        raise FileNotFoundError(f"[ERROR] BE request raw directory not found: {BE_REQUEST_RAW_DIR}")
+
+    for path in sorted(FE_RAW_DIR.glob("*.json")):
         data = load_json(path)
         normalized = normalize_fe(data)
         out_name = normalized_filename(path)
-        save_json(normalized, fe_out / out_name)
+        save_json(normalized, FE_NORM_DIR / out_name)
         print(f"[OK] normalized FE: {out_name}")
 
-    for path in sorted(be_req_in.glob("*.json")):
+    for path in sorted(BE_REQUEST_RAW_DIR.glob("*.json")):
         data = load_json(path)
         normalized = normalize_be_request(data)
         out_name = normalized_filename(path)
-        save_json(normalized, be_req_out / out_name)
+        save_json(normalized, BE_REQUEST_NORM_DIR / out_name)
         print(f"[OK] normalized BE request: {out_name}")
 
-    for path in sorted(be_evt_in.glob("*.json")):
+    for path in sorted(BE_EVENT_RAW_DIR.glob("*.json")):
         data = load_json(path)
         normalized = normalize_be_event(data)
         out_name = normalized_filename(path)
-        save_json(normalized, be_evt_out / out_name)
+        save_json(normalized, BE_EVENT_NORM_DIR / out_name)
         print(f"[OK] normalized BE event: {out_name}")
 
     print("\n[DONE] Raw normalization completed.")
