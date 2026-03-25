@@ -21,8 +21,8 @@ LABEL_MAP.update({user_id: 1 for user_id in BOT_USER_IDS})
 # =========================
 # 2) 입출력 경로
 # =========================
-INPUT_DIR = Path("./data/normalized/client_telemetry_log_FE")
-OUTPUT_CSV = Path("./data/feature/preprocess_fe.csv")
+INPUT_DIR = Path("./data/FE/normalized")
+OUTPUT_CSV = Path("./data/FE/feature/fe_preprocess.csv")
 
 
 # =========================
