@@ -1,0 +1,34 @@
+{
+  "UUID": "sess_b_001",
+  "X-User-Id": "b",
+  "X-Session-Ticket": "ticket_b_001",
+  "showScheduleId": 31021,
+  "seatIds": [8123],
+  "orderId": "ORD-B-0001",
+  "server_request_log": [
+    {
+      "endpoint": "/api/ticketing/31021/seatmap",
+      "ts_ms_server": 1742862000000
+    },
+    {
+      "endpoint": "/api/ticketing/31021/seatmap",
+      "ts_ms_server": 1742862000180
+    },
+    {
+      "endpoint": "/api/ticketing/31021/seatmap",
+      "ts_ms_server": 1742862000360
+    },
+    {
+      "endpoint": "/api/ticketing/31021/hold/seat",
+      "ts_ms_server": 1742862000550
+    },
+    {
+      "endpoint": "/api/ticketing/31021/hold/seat",
+      "ts_ms_server": 1742862000730
+    },
+    {
+      "endpoint": "/api/ticketing/31021/hold/seat",
+      "ts_ms_server": 1742862000910
+    }
+  ]
+}

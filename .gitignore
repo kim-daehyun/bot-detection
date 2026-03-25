@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+bot-detection/
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/

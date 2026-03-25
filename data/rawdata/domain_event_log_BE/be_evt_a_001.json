@@ -1,0 +1,7 @@
+{
+  "UUID": "sess_a_001",
+  "reservationNumber": "RSV-A-0001",
+  "orderId": "ORD-A-0001",
+  "ts_payment_ready": 1742860015000,
+  "ts_approvedAt_or_ts_fail": 1742860029800
+}
