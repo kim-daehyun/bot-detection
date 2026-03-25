@@ -2,6 +2,7 @@ from pathlib import Path
 import boto3
 from botocore.exceptions import ClientError
 
+#추후 확인 필요
 BUCKET_NAME = "sample-rawdata-bot"
 PREFIXES = [
     "client_telemetry_log_FE/",
