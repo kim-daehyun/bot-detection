@@ -3,7 +3,9 @@ import json
 from typing import Any
 
 
-RAW_BASE = Path("./data/rawdata")
+FE_RAW_DIR = Path("./data/FE/rawdata")
+BE_EVENT_RAW_DIR = Path("./data/BE/BE_domain_event_log/rawdata")
+BE_REQUEST_RAW_DIR = Path("./data/BE/BE_server_request_log/rawdata")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -121,17 +123,22 @@ def check_be_event_schema(file_path: Path) -> None:
 
 
 def main() -> None:
-    fe_dir = RAW_BASE / "client_telemetry_log_FE"
-    be_req_dir = RAW_BASE / "server_request_log_BE"
-    be_evt_dir = RAW_BASE / "domain_event_log_BE"
+    if not FE_RAW_DIR.exists():
+        raise FileNotFoundError(f"[ERROR] FE raw directory not found: {FE_RAW_DIR}")
 
-    for path in sorted(fe_dir.glob("*.json")):
+    if not BE_EVENT_RAW_DIR.exists():
+        raise FileNotFoundError(f"[ERROR] BE event raw directory not found: {BE_EVENT_RAW_DIR}")
+
+    if not BE_REQUEST_RAW_DIR.exists():
+        raise FileNotFoundError(f"[ERROR] BE request raw directory not found: {BE_REQUEST_RAW_DIR}")
+
+    for path in sorted(FE_RAW_DIR.glob("*.json")):
         check_fe_schema(path)
 
-    for path in sorted(be_req_dir.glob("*.json")):
+    for path in sorted(BE_REQUEST_RAW_DIR.glob("*.json")):
         check_be_request_schema(path)
 
-    for path in sorted(be_evt_dir.glob("*.json")):
+    for path in sorted(BE_EVENT_RAW_DIR.glob("*.json")):
         check_be_event_schema(path)
 
     print("\n[DONE] All schema checks passed.")
