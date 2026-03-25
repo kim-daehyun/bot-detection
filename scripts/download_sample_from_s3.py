@@ -2,14 +2,19 @@ from pathlib import Path
 import boto3
 from botocore.exceptions import ClientError
 
-#추후 확인 필요
+# 추후 확인 필요
 BUCKET_NAME = "sample-rawdata-bot"
-PREFIXES = [
-    "client_telemetry_log_FE/",
-    "domain_event_log_BE/",
-    "server_request_log_BE/",
-]
-LOCAL_BASE_DIR = Path("./data/rawdata")
+
+# S3 prefix -> 로컬 저장 폴더 매핑
+PREFIX_TO_LOCAL_DIR = {
+    "client_telemetry_log_FE/": Path("./data/FE/rawdata"),
+    "domain_event_log_BE/": Path("./data/BE/BE_domain_event_log/rawdata"),
+    "server_request_log_BE/": Path("./data/BE/BE_server_request_log/rawdata"),
+}
+
+
+def add_raw_prefix(filename: str) -> str:
+    return f"[raw]{filename}"
 
 
 def should_download(local_path: Path, s3_size: int) -> bool:
@@ -28,7 +33,25 @@ def should_download(local_path: Path, s3_size: int) -> bool:
     return False
 
 
-def download_prefix(s3_client, bucket_name: str, prefix: str, local_base_dir: Path) -> None:
+def build_local_path(prefix: str, key: str) -> Path:
+    """
+    예:
+      prefix = "client_telemetry_log_FE/"
+      key    = "client_telemetry_log_FE/fe_a_001.json"
+
+    저장 위치:
+      ./data/FE/rawdata/[raw]fe_a_001.json
+    """
+    base_dir = PREFIX_TO_LOCAL_DIR[prefix]
+
+    # key에서 prefix를 제거하고 실제 파일명만 추출
+    filename = Path(key).name
+    output_filename = add_raw_prefix(filename)
+
+    return base_dir / output_filename
+
+
+def download_prefix(s3_client, bucket_name: str, prefix: str) -> None:
     paginator = s3_client.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
 
@@ -46,8 +69,7 @@ def download_prefix(s3_client, bucket_name: str, prefix: str, local_base_dir: Pa
 
             found_any = True
 
-            relative_path = Path(key)
-            local_path = local_base_dir / relative_path
+            local_path = build_local_path(prefix, key)
             local_path.parent.mkdir(parents=True, exist_ok=True)
 
             if should_download(local_path, size):
@@ -71,9 +93,9 @@ def main():
         print(f"[ERROR] Cannot access bucket '{BUCKET_NAME}': {e}")
         return
 
-    for prefix in PREFIXES:
+    for prefix in PREFIX_TO_LOCAL_DIR.keys():
         print(f"\n=== Downloading prefix: {prefix} ===")
-        download_prefix(s3_client, BUCKET_NAME, prefix, LOCAL_BASE_DIR)
+        download_prefix(s3_client, BUCKET_NAME, prefix)
 
     print("\n[DONE] Download completed.")
 
