@@ -18,6 +18,10 @@ def save_json(data: dict[str, Any], path: Path) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+def normalized_filename(path: Path) -> str:
+    return f"[norm]{path.name}"
+
+
 def normalize_fe(data: dict[str, Any]) -> dict[str, Any]:
     page_enter_ts = data["page_enter_ts"]
     page_leave_ts = data["page_leave_ts"]
@@ -89,20 +93,23 @@ def main() -> None:
     for path in sorted(fe_in.glob("*.json")):
         data = load_json(path)
         normalized = normalize_fe(data)
-        save_json(normalized, fe_out / path.name)
-        print(f"[OK] normalized FE: {path.name}")
+        out_name = normalized_filename(path)
+        save_json(normalized, fe_out / out_name)
+        print(f"[OK] normalized FE: {out_name}")
 
     for path in sorted(be_req_in.glob("*.json")):
         data = load_json(path)
         normalized = normalize_be_request(data)
-        save_json(normalized, be_req_out / path.name)
-        print(f"[OK] normalized BE request: {path.name}")
+        out_name = normalized_filename(path)
+        save_json(normalized, be_req_out / out_name)
+        print(f"[OK] normalized BE request: {out_name}")
 
     for path in sorted(be_evt_in.glob("*.json")):
         data = load_json(path)
         normalized = normalize_be_event(data)
-        save_json(normalized, be_evt_out / path.name)
-        print(f"[OK] normalized BE event: {path.name}")
+        out_name = normalized_filename(path)
+        save_json(normalized, be_evt_out / out_name)
+        print(f"[OK] normalized BE event: {out_name}")
 
     print("\n[DONE] Raw normalization completed.")
 
