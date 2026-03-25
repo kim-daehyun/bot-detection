@@ -21,9 +21,9 @@ LABEL_MAP.update({user_id: 1 for user_id in BOT_USER_IDS})
 # =========================
 # 2) 입출력 경로
 # =========================
-REQ_INPUT_DIR = Path("./data/normalized/server_request_log_BE")
-EVT_INPUT_DIR = Path("./data/normalized/domain_event_log_BE")
-OUTPUT_CSV = Path("./data/feature/preprocess_be.csv")
+REQ_INPUT_DIR = Path("./data/BE/BE_server_request_log/normalized")
+EVT_INPUT_DIR = Path("./data/BE/BE_domain_event_log/normalized")
+OUTPUT_CSV = Path("./data/BE/feature/be_preprocess.csv")
 
 
 CSV_COLUMNS = [
@@ -110,8 +110,6 @@ def calc_target_retry_count(target_keys: list[str]) -> int:
     """
     현재 샘플/정규화 기준에서는 target_keys 자체가 세션 내 목표 목록이므로
     일단 target 개수의 총합을 사용.
-    샘플에 이미 중복 타깃이 반영되어 있지 않으므로,
-    이후 raw 구조 확장 시 requests 단위 target 출현 횟수 기반으로 고도화 가능.
     """
     return len(target_keys)
 
