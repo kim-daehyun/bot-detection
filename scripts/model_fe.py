@@ -9,7 +9,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import precision_score, recall_score
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
@@ -29,6 +29,12 @@ DROP_COLS = [
     "source_file",
 ]
 
+FEATURE_COLS = [
+    "duration_ms",
+    "mouse_activity_rate",
+    "mouse_teleport_rate",
+]
+
 
 def load_dataset(path: Path) -> pd.DataFrame:
     if not path.exists():
@@ -39,15 +45,19 @@ def load_dataset(path: Path) -> pd.DataFrame:
 def split_xy(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     if TARGET_COL not in df.columns:
         raise ValueError(f"[ERROR] '{TARGET_COL}' column not found.")
-    x = df.drop(columns=[TARGET_COL], errors="ignore")
+
+    missing_cols = [col for col in FEATURE_COLS if col not in df.columns]
+    if missing_cols:
+        raise ValueError(f"[ERROR] Missing feature columns: {missing_cols}")
+
     y = df[TARGET_COL].astype(int)
-    x = x.drop(columns=DROP_COLS, errors="ignore")
+    x = df[FEATURE_COLS].copy()
+
     return x, y
 
 
 def build_preprocessor(x_train: pd.DataFrame) -> ColumnTransformer:
-    numeric_cols = x_train.select_dtypes(include=["number"]).columns.tolist()
-    categorical_cols = [c for c in x_train.columns if c not in numeric_cols]
+    numeric_cols = FEATURE_COLS
 
     numeric_transformer = Pipeline(
         steps=[
@@ -56,17 +66,9 @@ def build_preprocessor(x_train: pd.DataFrame) -> ColumnTransformer:
         ]
     )
 
-    categorical_transformer = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore")),
-        ]
-    )
-
     return ColumnTransformer(
         transformers=[
             ("num", numeric_transformer, numeric_cols),
-            ("cat", categorical_transformer, categorical_cols),
         ]
     )
 
@@ -176,6 +178,7 @@ def main() -> None:
     x_valid, y_valid = split_xy(valid_df)
 
     print(f"[INFO] FE train shape: {x_train.shape}, valid shape: {x_valid.shape}")
+    print(f"[INFO] FE feature columns: {FEATURE_COLS}")
 
     preprocessor = build_preprocessor(x_train)
     model_dict = build_model_dict()
@@ -205,7 +208,11 @@ def main() -> None:
     )
 
     print("\n=== FE validation performance ===")
-    print(result_df[["model_name", "precision", "recall", "score_avg", "model_path"]].to_string(index=False))
+    print(
+        result_df[
+            ["model_name", "precision", "recall", "score_avg", "model_path"]
+        ].to_string(index=False)
+    )
 
     best_row = result_df.iloc[0]
     print(
