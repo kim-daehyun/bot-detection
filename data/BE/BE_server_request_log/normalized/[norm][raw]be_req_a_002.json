@@ -1,0 +1,37 @@
+{
+  "session_id": "sess_a_002",
+  "user_id": "a",
+  "session_ticket": "ticket_a_002",
+  "showScheduleId": 45510,
+  "seatIds": [
+    9001,
+    9002
+  ],
+  "orderId": "ORD-A-0002",
+  "target_keys": [
+    "45510_9001",
+    "45510_9002"
+  ],
+  "requests_sorted": [
+    {
+      "endpoint": "/api/ticketing/45510/seatmap",
+      "ts_ms_server": 1742861001200
+    },
+    {
+      "endpoint": "/api/ticketing/45510/hold/seat",
+      "ts_ms_server": 1742861004700
+    },
+    {
+      "endpoint": "/api/bookings",
+      "ts_ms_server": 1742861009800
+    },
+    {
+      "endpoint": "/api/bookings/RSV-A-0002/payment-ready",
+      "ts_ms_server": 1742861014200
+    },
+    {
+      "endpoint": "/api/payments/confirm",
+      "ts_ms_server": 1742861029500
+    }
+  ]
+}

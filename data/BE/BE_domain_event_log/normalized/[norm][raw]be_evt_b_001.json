@@ -1,0 +1,8 @@
+{
+  "session_id": "sess_b_001",
+  "reservationNumber": "RSV-B-0001",
+  "orderId": "ORD-B-0001",
+  "ts_payment_ready": 1742862001000,
+  "ts_terminal": 1742862001580,
+  "payment_ready_to_terminal_ms": 580
+}

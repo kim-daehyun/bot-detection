@@ -1,0 +1,39 @@
+{
+  "session_id": "sess_b_002",
+  "user_id": "b",
+  "session_ticket": "ticket_b_002",
+  "showScheduleId": 45510,
+  "seatIds": [
+    9001
+  ],
+  "orderId": "ORD-B-0002",
+  "target_keys": [
+    "45510_9001"
+  ],
+  "requests_sorted": [
+    {
+      "endpoint": "/api/ticketing/45510/seatmap",
+      "ts_ms_server": 1742863000000
+    },
+    {
+      "endpoint": "/api/ticketing/45510/hold/seat",
+      "ts_ms_server": 1742863000120
+    },
+    {
+      "endpoint": "/api/ticketing/45510/hold/seat",
+      "ts_ms_server": 1742863000240
+    },
+    {
+      "endpoint": "/api/bookings",
+      "ts_ms_server": 1742863000360
+    },
+    {
+      "endpoint": "/api/payments/confirm",
+      "ts_ms_server": 1742863000480
+    },
+    {
+      "endpoint": "/api/payments/confirm",
+      "ts_ms_server": 1742863000600
+    }
+  ]
+}

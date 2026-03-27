@@ -1,0 +1,11 @@
+session_id,user_id,label,event_type,duration_ms,mousemove_count_raw,mousemove_count_actual,mousemove_teleport_count,mouse_activity_rate,mouse_teleport_rate,viewport_width,viewport_height,source_file
+os_fe_005,b,1,seatmap,7696,14,13,1,1.689189,0.076923,1920,768,[norm][raw]fe_a_002.json
+os_fe_091,a,0,seatmap,6647,15,13,0,1.95577,0.0,1366,900,[norm][raw]fe_b_001.json
+os_fe_022,a,0,seatmap,1725,5,4,4,2.318841,1.0,1366,768,[norm][raw]fe_a_001.json
+os_fe_052,b,1,seatmap,1322,9,7,4,5.295008,0.571429,1920,1080,[norm][raw]fe_b_002.json
+os_fe_019,b,1,seatmap,5633,11,10,0,1.775253,0.0,1440,1080,[norm][raw]fe_a_002.json
+os_fe_013,b,1,seatmap,6623,14,12,2,1.811868,0.166667,1536,1080,[norm][raw]fe_a_001.json
+os_fe_016,a,0,seatmap,1787,4,5,5,2.797985,1.0,1728,864,[norm][raw]fe_b_002.json
+os_fe_012,b,1,seatmap,1558,4,5,5,3.209243,1.0,1366,768,[norm][raw]fe_b_001.json
+os_fe_028,a,0,seatmap,1603,3,4,4,2.495321,1.0,1366,768,[norm][raw]fe_a_001.json
+os_fe_078,a,0,seatmap,6720,15,13,0,1.934524,0.0,1728,960,[norm][raw]fe_a_001.json
