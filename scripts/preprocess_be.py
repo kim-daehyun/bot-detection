@@ -4,95 +4,173 @@ from pathlib import Path
 import csv
 import json
 import math
+import re
 from typing import Any
 
 
-# =========================
-# 1) 라벨 규칙
-# 여기 리스트만 수정하면 라벨 변경 가능
-# =========================
-HUMAN_USER_IDS = ["a"]
-BOT_USER_IDS = ["b"]
-
-LABEL_MAP = {user_id: 0 for user_id in HUMAN_USER_IDS}
-LABEL_MAP.update({user_id: 1 for user_id in BOT_USER_IDS})
+REQ_INPUT_DIR = Path("/Users/daehyun/Desktop/실무통합/bot_detection_project/data/BE/BE_server_request_log/rawdata")
+EVT_INPUT_DIR = Path("/Users/daehyun/Desktop/실무통합/bot_detection_project/data/BE/BE_domain_event_log/rawdata")
+OUTPUT_CSV = Path("/Users/daehyun/Desktop/실무통합/bot_detection_project/data/BE/feature/be_preprocess.csv")
 
 
 # =========================
-# 2) 입출력 경로
+# 최종 핵심 컬럼
 # =========================
-REQ_INPUT_DIR = Path("./data/BE/BE_server_request_log/normalized")
-EVT_INPUT_DIR = Path("./data/BE/BE_domain_event_log/normalized")
-OUTPUT_CSV = Path("./data/BE/feature/be_preprocess.csv")
-
-
 CSV_COLUMNS = [
-    "session_id",
-    "user_id",
-    "label",
-    "showScheduleId",
-    "orderId",
-    "request_count",
-    "endpoint_burst_max_1s",
-    "req_interval_cv",
-    "target_retry_count",
-    "payment_ready_to_terminal_ms",
+    "ts_payment_ready",
+    "ts_whole_session",
+    "req_interval_cv_pre_hold",
+    "req_interval_cv_hold_gap",
     "req_source_file",
     "evt_source_file",
+    "label",
 ]
 
+HEADER_LINE = ",".join(CSV_COLUMNS)
 
-def load_json(path: Path) -> dict[str, Any]:
+
+# /api/ticketing/{id}/hold/seat
+HOLD_SEAT_PATTERN = re.compile(r"^/api/ticketing/[^/]+/hold/seat$")
+
+
+def infer_label_from_filename(filename: str) -> int | str:
+    if filename.startswith("[bot]"):
+        return 1
+    if filename.startswith("[human]"):
+        return 0
+    return ""
+
+
+def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+
     with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        for line_no, line in enumerate(f, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+                if isinstance(obj, dict):
+                    records.append(obj)
+            except json.JSONDecodeError:
+                print(f"[WARN] JSON decode error: {path.name}:{line_no}")
+                continue
+
+    return records
 
 
-def get_label(user_id: str) -> int | str:
-    return LABEL_MAP.get(user_id, "")
+def normalize_filename_key(filename: str) -> str:
+    """
+    req/evt 파일명 매칭용 키 정규화
+    예:
+    [bot][raw]be_req_a_001.jsonl -> a_001
+    [bot][raw]be_evt_a_001.jsonl -> a_001
+    """
+    name = filename
+    name = re.sub(r"^\[(bot|human|unknown)\]", "", name)
+    name = re.sub(r"^\[raw\]", "", name)
+
+    if name.endswith(".jsonl"):
+        name = name[:-6]
+
+    name = re.sub(r"^be_req_", "", name)
+    name = re.sub(r"^be_evt_", "", name)
+    return name
 
 
-def safe_div(numerator: float, denominator: float) -> float:
-    if denominator == 0:
+def build_evt_map(evt_dir: Path) -> dict[str, Path]:
+    evt_map: dict[str, Path] = {}
+    for evt_path in sorted(evt_dir.glob("*.jsonl")):
+        key = normalize_filename_key(evt_path.name)
+        evt_map[key] = evt_path
+    return evt_map
+
+
+def find_matching_evt_path(req_path: Path, evt_map: dict[str, Path]) -> Path | None:
+    req_key = normalize_filename_key(req_path.name)
+    return evt_map.get(req_key)
+
+
+def load_existing_processed_files(csv_path: Path) -> tuple[set[str], set[str]]:
+    existing_req_files: set[str] = set()
+    existing_evt_files: set[str] = set()
+
+    if not csv_path.exists() or csv_path.stat().st_size == 0:
+        return existing_req_files, existing_evt_files
+
+    with csv_path.open("r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            req_file = (row.get("req_source_file") or "").strip()
+            evt_file = (row.get("evt_source_file") or "").strip()
+
+            if req_file:
+                existing_req_files.add(req_file)
+            if evt_file:
+                existing_evt_files.add(evt_file)
+
+    return existing_req_files, existing_evt_files
+
+
+def ensure_csv_header(csv_path: Path) -> None:
+    """
+    CSV가 없으면 정확한 헤더 생성.
+    CSV가 있는데 첫 줄 헤더가 다르면 기존 내용을 살리고 맨 위 헤더를 정확히 교정.
+    """
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if not csv_path.exists():
+        with csv_path.open("w", encoding="utf-8", newline="") as f:
+            f.write(HEADER_LINE + "\n")
+        return
+
+    content = csv_path.read_text(encoding="utf-8")
+    if not content:
+        with csv_path.open("w", encoding="utf-8", newline="") as f:
+            f.write(HEADER_LINE + "\n")
+        return
+
+    first_line, *rest = content.splitlines()
+    if first_line.strip() == HEADER_LINE:
+        return
+
+    with csv_path.open("w", encoding="utf-8", newline="") as f:
+        f.write(HEADER_LINE + "\n")
+        if first_line.strip() and first_line.strip() != HEADER_LINE:
+            f.write(first_line.rstrip("\n") + "\n")
+        for line in rest:
+            f.write(line.rstrip("\n") + "\n")
+
+
+def is_hold_seat(record: dict[str, Any]) -> bool:
+    path = record.get("path", "")
+    return isinstance(path, str) and bool(HOLD_SEAT_PATTERN.match(path))
+
+
+def extract_numeric_timestamps(records: list[dict[str, Any]]) -> list[float]:
+    timestamps: list[float] = []
+    for r in records:
+        ts = r.get("tsServer")
+        if isinstance(ts, (int, float)):
+            timestamps.append(float(ts))
+    return timestamps
+
+
+def calc_cv_from_timestamps(timestamps: list[float]) -> float:
+    """
+    인접 요청 간격(dt)의 CV = std / mean
+    """
+    if len(timestamps) < 2:
         return 0.0
-    return numerator / denominator
 
-
-def calc_endpoint_burst_max_1s(requests_sorted: list[dict[str, Any]]) -> int:
-    """
-    같은 endpoint 기준, 1초(1000ms) 슬라이딩 윈도우 내 최대 호출 수
-    """
-    max_burst = 0
-
-    endpoints: dict[str, list[int]] = {}
-    for req in requests_sorted:
-        endpoint = req["endpoint"]
-        ts = req["ts_ms_server"]
-        endpoints.setdefault(endpoint, []).append(ts)
-
-    for _, timestamps in endpoints.items():
-        left = 0
-        for right in range(len(timestamps)):
-            while timestamps[right] - timestamps[left] > 1000:
-                left += 1
-            window_count = right - left + 1
-            if window_count > max_burst:
-                max_burst = window_count
-
-    return max_burst
-
-
-def calc_req_interval_cv(requests_sorted: list[dict[str, Any]]) -> float:
-    """
-    연속 요청 간 시간 차(dt)의 CV = 표준편차 / 평균
-    """
-    if len(requests_sorted) < 2:
-        return 0.0
+    timestamps = sorted(timestamps)
 
     intervals: list[float] = []
-    for i in range(1, len(requests_sorted)):
-        dt = requests_sorted[i]["ts_ms_server"] - requests_sorted[i - 1]["ts_ms_server"]
+    for i in range(1, len(timestamps)):
+        dt = timestamps[i] - timestamps[i - 1]
         if dt > 0:
-            intervals.append(float(dt))
+            intervals.append(dt)
 
     if not intervals:
         return 0.0
@@ -106,77 +184,127 @@ def calc_req_interval_cv(requests_sorted: list[dict[str, Any]]) -> float:
     return std_dt / mean_dt
 
 
-def calc_target_retry_count(target_keys: list[str]) -> int:
+def split_pre_post_hold_records(
+    records: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
-    현재 샘플/정규화 기준에서는 target_keys 자체가 세션 내 목표 목록이므로
-    일단 target 개수의 총합을 사용.
+    첫 번째 hold/seat를 경계로 pre / post 분리
+    - pre_hold  : 첫 hold/seat 직전까지
+    - post_hold : 첫 hold/seat 포함 이후
     """
-    return len(target_keys)
+    first_hold_idx = None
+
+    for idx, record in enumerate(records):
+        if is_hold_seat(record):
+            first_hold_idx = idx
+            break
+
+    if first_hold_idx is None:
+        return records[:], []
+
+    pre_records = records[:first_hold_idx]
+    post_records = records[first_hold_idx:]
+
+    return pre_records, post_records
 
 
-def load_event_map(evt_dir: Path) -> dict[str, dict[str, Any]]:
-    event_map: dict[str, dict[str, Any]] = {}
-    for path in sorted(evt_dir.glob("*.json")):
-        data = load_json(path)
-        session_id = data["session_id"]
-        data["_source_file"] = path.name
-        event_map[session_id] = data
-    return event_map
+def calc_req_interval_cv_pre_hold(records: list[dict[str, Any]]) -> float:
+    pre_records, _ = split_pre_post_hold_records(records)
+    timestamps = extract_numeric_timestamps(pre_records)
+    return calc_cv_from_timestamps(timestamps)
 
 
-def build_be_row(req_path: Path, evt_map: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    req_data = load_json(req_path)
+def calc_req_interval_cv_post_hold(records: list[dict[str, Any]]) -> float:
+    _, post_records = split_pre_post_hold_records(records)
+    timestamps = extract_numeric_timestamps(post_records)
+    return calc_cv_from_timestamps(timestamps)
 
-    session_id = req_data["session_id"]
-    user_id = req_data["user_id"]
-    show_schedule_id = req_data["showScheduleId"]
-    order_id = req_data["orderId"]
-    target_keys = req_data["target_keys"]
-    requests_sorted = req_data["requests_sorted"]
 
-    request_count = len(requests_sorted)
-    endpoint_burst_max_1s = calc_endpoint_burst_max_1s(requests_sorted)
-    req_interval_cv = calc_req_interval_cv(requests_sorted)
-    target_retry_count = calc_target_retry_count(target_keys)
+def calc_req_interval_cv_hold_gap(records: list[dict[str, Any]]) -> float:
+    """
+    선점 후 CV - 선점 전 CV
+    음수면: 선점 후가 더 안정적/규칙적
+    양수면: 선점 후가 더 불규칙
+    """
+    pre_hold_cv = calc_req_interval_cv_pre_hold(records)
+    post_hold_cv = calc_req_interval_cv_post_hold(records)
+    return abs(post_hold_cv - pre_hold_cv)
 
-    evt_data = evt_map.get(session_id)
-    payment_ready_to_terminal_ms = ""
-    evt_source_file = ""
 
-    if evt_data is not None:
-        payment_ready_to_terminal_ms = evt_data.get("payment_ready_to_terminal_ms", "")
-        evt_source_file = evt_data.get("_source_file", "")
+def calc_ts_payment_ready(records: list[dict[str, Any]]) -> float | str:
+    """
+    EVT 파일 안의 tsServer 값들 중
+    가장 이른 시각과 가장 늦은 시각의 차이
+    """
+    timestamps = []
+    for r in records:
+        ts = r.get("tsServer")
+        if isinstance(ts, (int, float)):
+            timestamps.append(float(ts))
+
+    if len(timestamps) < 2:
+        return ""
+
+    timestamps.sort()
+    return timestamps[-1] - timestamps[0]
+
+
+def calc_ts_whole_session(records: list[dict[str, Any]]) -> float | str:
+    """
+    req 파일에서:
+    - 첫 번째 /api/auth/login 의 tsServer
+    - 마지막 /api/payments/confirm 의 tsServer
+    차이를 계산
+    """
+    login_ts = None
+    confirm_ts = None
+
+    for r in records:
+        path = r.get("path")
+        ts = r.get("tsServer")
+
+        if not isinstance(path, str):
+            continue
+        if not isinstance(ts, (int, float)):
+            continue
+
+        if login_ts is None and path == "/api/auth/login":
+            login_ts = float(ts)
+
+        if path == "/api/payments/confirm":
+            confirm_ts = float(ts)
+
+    if login_ts is None or confirm_ts is None:
+        return ""
+
+    return confirm_ts - login_ts
+
+
+def build_row(req_path: Path, evt_map: dict[str, Path]) -> dict[str, Any] | None:
+    matched_evt_path = find_matching_evt_path(req_path, evt_map)
+    if matched_evt_path is None:
+        print(f"[SKIP] matching evt file not found for req: {req_path.name}")
+        return None
+
+    req_records = load_jsonl(req_path)
+    evt_records = load_jsonl(matched_evt_path)
+
+    req_interval_cv_pre_hold = calc_req_interval_cv_pre_hold(req_records)
+    req_interval_cv_hold_gap = calc_req_interval_cv_hold_gap(req_records)
+    ts_payment_ready = calc_ts_payment_ready(evt_records)
+    ts_whole_session = calc_ts_whole_session(req_records)
+    label = infer_label_from_filename(req_path.name)
 
     row = {
-        "session_id": session_id,
-        "user_id": user_id,
-        "label": get_label(user_id),
-        "showScheduleId": show_schedule_id,
-        "orderId": order_id,
-        "request_count": request_count,
-        "endpoint_burst_max_1s": endpoint_burst_max_1s,
-        "req_interval_cv": round(req_interval_cv, 6),
-        "target_retry_count": target_retry_count,
-        "payment_ready_to_terminal_ms": payment_ready_to_terminal_ms,
+        "ts_payment_ready": ts_payment_ready,
+        "ts_whole_session": ts_whole_session,
+        "req_interval_cv_pre_hold": round(req_interval_cv_pre_hold, 6),
+        "req_interval_cv_hold_gap": round(req_interval_cv_hold_gap, 6),
         "req_source_file": req_path.name,
-        "evt_source_file": evt_source_file,
+        "evt_source_file": matched_evt_path.name,
+        "label": label,
     }
     return row
-
-
-def load_existing_session_ids(csv_path: Path) -> set[str]:
-    if not csv_path.exists():
-        return set()
-
-    existing_ids: set[str] = set()
-    with csv_path.open("r", encoding="utf-8", newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            session_id = row.get("session_id", "")
-            if session_id:
-                existing_ids.add(session_id)
-
-    return existing_ids
 
 
 def append_rows_to_csv(csv_path: Path, rows: list[dict[str, Any]]) -> None:
@@ -184,15 +312,10 @@ def append_rows_to_csv(csv_path: Path, rows: list[dict[str, Any]]) -> None:
         print("[INFO] No new BE rows to append.")
         return
 
-    csv_path.parent.mkdir(parents=True, exist_ok=True)
-    file_exists = csv_path.exists()
+    ensure_csv_header(csv_path)
 
     with csv_path.open("a", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_COLUMNS)
-
-        if not file_exists:
-            writer.writeheader()
-
         for row in rows:
             writer.writerow(row)
 
@@ -206,20 +329,41 @@ def main() -> None:
     if not EVT_INPUT_DIR.exists():
         raise FileNotFoundError(f"[ERROR] Event input directory not found: {EVT_INPUT_DIR}")
 
-    evt_map = load_event_map(EVT_INPUT_DIR)
-    existing_session_ids = load_existing_session_ids(OUTPUT_CSV)
+    ensure_csv_header(OUTPUT_CSV)
+
+    evt_map = build_evt_map(EVT_INPUT_DIR)
+    existing_req_files, existing_evt_files = load_existing_processed_files(OUTPUT_CSV)
+
     new_rows: list[dict[str, Any]] = []
 
-    for req_path in sorted(REQ_INPUT_DIR.glob("*.json")):
-        row = build_be_row(req_path, evt_map)
-        session_id = row["session_id"]
+    for req_path in sorted(REQ_INPUT_DIR.glob("*.jsonl")):
+        if req_path.name in existing_req_files:
+            print(f"[SKIP] already processed req file: {req_path.name}")
+            continue
 
-        if session_id in existing_session_ids:
-            print(f"[SKIP] already exists in CSV: {session_id} ({req_path.name})")
+        matched_evt_path = find_matching_evt_path(req_path, evt_map)
+        if matched_evt_path is None:
+            print(f"[SKIP] no matching evt file for req: {req_path.name}")
+            continue
+
+        if matched_evt_path.name in existing_evt_files:
+            print(f"[SKIP] already processed evt file: {matched_evt_path.name}")
+            continue
+
+        row = build_row(req_path, evt_map)
+        if row is None:
             continue
 
         new_rows.append(row)
-        print(f"[ADD] new BE row: {session_id} ({req_path.name})")
+        print(
+            f"[ADD] req={row['req_source_file']}, "
+            f"evt={row['evt_source_file']}, "
+            f"label={row['label']}, "
+            f"pre_hold_cv={row['req_interval_cv_pre_hold']}, "
+            f"hold_gap={row['req_interval_cv_hold_gap']}, "
+            f"ts_payment_ready={row['ts_payment_ready']}, "
+            f"ts_whole_session={row['ts_whole_session']}"
+        )
 
     append_rows_to_csv(OUTPUT_CSV, new_rows)
 

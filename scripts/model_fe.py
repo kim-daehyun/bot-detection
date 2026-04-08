@@ -23,16 +23,16 @@ MODEL_DIR = Path("./model/FE")
 
 TARGET_COL = "label"
 
+# 학습에 쓰지 않는 컬럼
 DROP_COLS = [
-    "session_id",
-    "user_id",
     "source_file",
 ]
 
+# 실제 학습에 사용할 feature 3개
 FEATURE_COLS = [
     "duration_ms",
-    "mouse_activity_rate",
     "mouse_teleport_rate",
+    "mousemove_count",
 ]
 
 
@@ -179,6 +179,7 @@ def main() -> None:
 
     print(f"[INFO] FE train shape: {x_train.shape}, valid shape: {x_valid.shape}")
     print(f"[INFO] FE feature columns: {FEATURE_COLS}")
+    print(f"[INFO] Label meaning: 0=human, 1=bot")
 
     preprocessor = build_preprocessor(x_train)
     model_dict = build_model_dict()

@@ -8,12 +8,12 @@ from sklearn.model_selection import train_test_split
 # =========================
 # 1) 경로 설정
 # =========================
-FE_INPUT_PATH = Path("./data/FE/feature/[over_sampling]fe_preprocess.csv")
+FE_INPUT_PATH = Path("./data/FE/feature/fe_preprocess.csv")
 FE_TRAIN_PATH = Path("./data/FE/dataset/trainset/fe_trainset.csv")
 FE_VALID_PATH = Path("./data/FE/dataset/validset/fe_validset.csv")
 FE_TEST_PATH = Path("./data/FE/dataset/testset/fe_testset.csv")
 
-BE_INPUT_PATH = Path("./data/BE/feature/[over_sampling]be_preprocess.csv")
+BE_INPUT_PATH = Path("./data/BE/feature/be_preprocess.csv")
 BE_TRAIN_PATH = Path("./data/BE/dataset/trainset/be_trainset.csv")
 BE_VALID_PATH = Path("./data/BE/dataset/validset/be_validset.csv")
 BE_TEST_PATH = Path("./data/BE/dataset/testset/be_testset.csv")

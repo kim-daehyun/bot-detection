@@ -1,11 +1,6 @@
-session_id,user_id,label,showScheduleId,orderId,request_count,endpoint_burst_max_1s,req_interval_cv,target_retry_count,payment_ready_to_terminal_ms,req_source_file,evt_source_file
-os_be_069,a,0,45510,ORD-OS-0069,6,3,0.019717,1,489,[norm][raw]be_req_b_002.json,[norm][raw]be_evt_b_002.json
-os_be_013,a,0,45510,ORD-OS-0013,6,2,0.861791,2,13272,[norm][raw]be_req_a_002.json,[norm][raw]be_evt_b_002.json
-os_be_100,a,0,45510,ORD-OS-0100,6,3,0.67911,3,14367,[norm][raw]be_req_a_002.json,[norm][raw]be_evt_a_002.json
-os_be_080,b,1,45510,ORD-OS-0080,6,1,0.64707,4,14599,[norm][raw]be_req_b_001.json,[norm][raw]be_evt_b_001.json
-os_be_038,a,0,45510,ORD-OS-0038,5,3,0.0,2,2798,[norm][raw]be_req_a_001.json,[norm][raw]be_evt_b_002.json
-os_be_010,b,1,45510,ORD-OS-0010,6,1,0.0,3,2622,[norm][raw]be_req_b_002.json,[norm][raw]be_evt_a_001.json
-os_be_016,b,1,31021,ORD-OS-0016,7,4,0.028189,2,556,[norm][raw]be_req_a_002.json,[norm][raw]be_evt_b_002.json
-os_be_032,a,0,31021,ORD-OS-0032,6,3,0.019478,1,579,[norm][raw]be_req_b_001.json,[norm][raw]be_evt_b_001.json
-os_be_043,a,0,45510,ORD-OS-0043,6,2,0.0,1,2883,[norm][raw]be_req_a_001.json,[norm][raw]be_evt_b_001.json
-os_be_082,b,1,45510,ORD-OS-0082,6,5,0.026098,1,496,[norm][raw]be_req_b_002.json,[norm][raw]be_evt_b_001.json
+ts_payment_ready,ts_whole_session,req_interval_cv_pre_hold,req_interval_cv_hold_gap,req_source_file,evt_source_file,label
+7148.0,23255.0,1.569446,0.397255,[bot][raw]session_002.jsonl,[bot][raw]session_002.jsonl,1
+17586.0,89570.0,2.354397,1.561514,[human][raw]session_009.jsonl,[human][raw]session_009.jsonl,0
+14207.0,70634.0,2.445123,1.52892,[human][raw]session_008.jsonl,[human][raw]session_008.jsonl,0
+7148.0,23255.0,1.569446,0.397255,[bot][raw]session_002.jsonl,[bot][raw]session_002.jsonl,1
+6846.0,18033.0,1.88871,1.198332,[bot][raw]session_003.jsonl,[bot][raw]session_003.jsonl,1

@@ -23,19 +23,18 @@ MODEL_DIR = Path("./model/BE")
 
 TARGET_COL = "label"
 
+# 현재 CSV에서 학습에 쓰지 않을 컬럼
 DROP_COLS = [
-    "session_id",
-    "user_id",
-    "orderId",
     "req_source_file",
     "evt_source_file",
 ]
 
+# 현재 실제 학습에 사용할 핵심 feature 4개
 FEATURE_COLS = [
-    "endpoint_burst_max_1s",
-    "req_interval_cv",
-    "target_retry_count",
-    "payment_ready_to_terminal_ms",
+    "ts_payment_ready",
+    "ts_whole_session",
+    "req_interval_cv_pre_hold",
+    "req_interval_cv_hold_gap",
 ]
 
 
@@ -182,6 +181,7 @@ def main() -> None:
 
     print(f"[INFO] BE train shape: {x_train.shape}, valid shape: {x_valid.shape}")
     print(f"[INFO] BE feature columns: {FEATURE_COLS}")
+    print(f"[INFO] Label meaning: 0=human, 1=bot")
 
     preprocessor = build_preprocessor(x_train)
     model_dict = build_model_dict()
