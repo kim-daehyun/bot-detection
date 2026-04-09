@@ -1,0 +1,17 @@
+{"tsServer":1775705829796,"method":"POST","path":"/api/payments/confirm","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{"paymentKey":"tviva20260409123703vm713","orderId":"R202604091B6795","amount":142000},"statusCode":400}
+{"tsServer":1775705829886,"method":"GET","path":"/api/auth/me","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705837578,"method":"POST","path":"/api/auth/login","userId":null,"sessionTicket":null,"queryParams":{},"requestBody":{"email":"eogus4717@gmail.com","password":"alclsalcls1!"},"statusCode":200}
+{"tsServer":1775705837742,"method":"GET","path":"/api/auth/me","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705837843,"method":"GET","path":"/api/musical/home/promotions","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705837840,"method":"GET","path":"/api/musical/home/shows","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{"order":"DAILY_BOOKING","region":"ALL","page":"1","size":"12"},"requestBody":{},"statusCode":200}
+{"tsServer":1775705837851,"method":"GET","path":"/api/musical/home/banners","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705838210,"method":"POST","path":"/api/auth/reissue","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705838268,"method":"GET","path":"/api/auth/me","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705838255,"method":"GET","path":"/api/musical/reviews/1/meta","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705838256,"method":"GET","path":"/api/musical/shows/1/casting-schedules","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705842437,"method":"POST","path":"/api/queue/1/enter","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705842473,"method":"GET","path":"/api/queue/1/status","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705844002,"method":"GET","path":"/api/queue/1/status","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705844564,"method":"POST","path":"/api/ticketing/1/enter","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705844597,"method":"GET","path":"/api/ticketing/1","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":"ed2db492-638f-485c-afcb-ee81834a600c","queryParams":{},"requestBody":{},"statusCode":200}
+{"tsServer":1775705844869,"method":"POST","path":"/api/ticketing/1/hold/seat","userId":"49e7bc75-7bcb-44d9-ab8e-8d71a67df937","sessionTicket":"ed2db492-638f-485c-afcb-ee81834a600c","queryParams":{},"requestBody":{"scheduledSeatIds":[3266]},"statusCode":200}

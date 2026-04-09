@@ -1,0 +1,2 @@
+{"tsServer":1775704375216,"method":"POST","path":"/api/auth/login","userId":null,"sessionTicket":null,"queryParams":{},"requestBody":{"email":"test@test.com","password":"test"},"statusCode":200}
+{"tsServer":1775704375357,"method":"GET","path":"/api/auth/me","userId":"64683eca-4333-477f-ba2d-c63566162d5a","sessionTicket":null,"queryParams":{},"requestBody":{},"statusCode":200}

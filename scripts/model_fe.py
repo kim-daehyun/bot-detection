@@ -31,7 +31,7 @@ DROP_COLS = [
 # 실제 학습에 사용할 feature 3개
 FEATURE_COLS = [
     "duration_ms",
-    "mouse_teleport_rate",
+    "mousemove_teleport_count",
     "mousemove_count",
 ]
 

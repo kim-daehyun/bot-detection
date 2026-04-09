@@ -18,8 +18,8 @@ OUTPUT_CSV = Path("/Users/daehyun/Desktop/실무통합/bot_detection_project/dat
 # 2) teleport 판정 기준
 # =========================
 TELEPORT_DT_MS_THRESHOLD = 20
-TELEPORT_NORM_DIST_THRESHOLD = 0.12
-TELEPORT_NORM_SPEED_THRESHOLD = 0.006
+TELEPORT_NORM_DIST_THRESHOLD = 0.003
+TELEPORT_NORM_SPEED_THRESHOLD = 0.002
 
 
 # =========================
@@ -27,17 +27,11 @@ TELEPORT_NORM_SPEED_THRESHOLD = 0.006
 # =========================
 CSV_COLUMNS = [
     "duration_ms",
-    "mouse_teleport_rate",
+    "mousemove_teleport_count",
     "mousemove_count",
     "source_file",
     "label",
 ]
-
-
-def safe_div(numerator: float, denominator: float) -> float:
-    if denominator == 0:
-        return 0.0
-    return numerator / denominator
 
 
 def get_label_from_filename(path: Path) -> int:
@@ -197,14 +191,9 @@ def build_fe_rows_from_jsonl(path: Path) -> list[dict[str, Any]]:
             viewport_height=int(viewport_height or 0),
         )
 
-        mouse_teleport_rate = safe_div(
-            mousemove_teleport_count,
-            int(mousemove_count or 0),
-        )
-
         row = {
             "duration_ms": duration_ms,
-            "mouse_teleport_rate": round(mouse_teleport_rate, 6),
+            "mousemove_teleport_count": int(mousemove_teleport_count),
             "mousemove_count": int(mousemove_count or 0),
             "source_file": path.name,
             "label": label,
