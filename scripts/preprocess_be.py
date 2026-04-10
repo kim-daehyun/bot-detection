@@ -222,9 +222,8 @@ def calc_req_interval_cv_post_hold(records: list[dict[str, Any]]) -> float:
 
 def calc_req_interval_cv_hold_gap(records: list[dict[str, Any]]) -> float:
     """
-    선점 후 CV - 선점 전 CV
-    음수면: 선점 후가 더 안정적/규칙적
-    양수면: 선점 후가 더 불규칙
+    선점 전후 CV 차이의 절대값
+    값이 클수록 hold 전후 요청 간격 패턴 변화가 크다고 해석할 수 있다.
     """
     pre_hold_cv = calc_req_interval_cv_pre_hold(records)
     post_hold_cv = calc_req_interval_cv_post_hold(records)

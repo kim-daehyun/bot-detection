@@ -63,7 +63,7 @@ def calc_mousemove_teleport_count(
 ) -> int:
     """
     teleport 판정 기준:
-      (dt < 20ms and norm_dist > 0.12) or (norm_speed > 0.006)
+      (dt < 20ms and norm_dist > 0.003) or (norm_speed > 0.002)
     """
     if len(events) < 2:
         return 0
